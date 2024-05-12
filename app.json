@@ -1,10 +1,16 @@
 {
   "expo": {
+    "splash": {
+      "image": "./assets/splash-1.png",
+      "backgroundColor": "#FCFE7D",
+      "resizeMode": "contain"
+    },
     "scheme": "acme",
     "userInterfaceStyle": "automatic",
+    "background": "#fff",
     "orientation": "default",
     "web": {
-      "output": "static",
+      "output": "server",
       "bundler": "metro"
     },
     "plugins": [
@@ -15,7 +21,10 @@
         }
       ]
     ],
-    "name": "my-app-with-ts-exporouter-tailwind",
-    "slug": "my-app-with-ts-exporouter-tailwind"
+    "name": "sdc-app-react-native",
+    "slug": "sdc-app-react-native",
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }

@@ -1,11 +1,13 @@
 import "../global.css";
-import { Stack } from "expo-router";
+import { Slot } from "expo-router";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-export default function Layout() {
-  // return <Slot />;
+export const queryClient = new QueryClient();
+
+export default function RootLayout() {
   return (
-    <Stack>
-      <Stack.Screen name="index" options={{ headerTitle: "SDC App", statusBarColor: "#fff", headerTitleAlign: 'center', headerShadowVisible: false }} />
-    </Stack>
+    <QueryClientProvider client={queryClient}>
+      <Slot />
+    </QueryClientProvider>
   );
 }

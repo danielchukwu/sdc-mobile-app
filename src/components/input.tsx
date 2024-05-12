@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { useController, type Control, type FieldValues } from "react-hook-form";
 import { TextInput, TextInputProps, View } from "react-native";
 
@@ -22,8 +23,8 @@ export const Input = ({ className, ...props }: TextInputProps) => {
   );
 };
 
-type FormInputProps = TextInputProps & {name: string, control: Control<FieldValues, any>};
-export const FormInput = ({ className, name, control, ...props }: FormInputProps) => {
+type FormInputProps = TextInputProps & {name: string, control: Control<FieldValues, any>, disableDefaultClass?: boolean};
+export const FormInput = ({ className, name, control, disableDefaultClass=false, ...props }: FormInputProps) => {
   const { field } = useController({
     control,
     defaultValue: '',
@@ -35,7 +36,7 @@ export const FormInput = ({ className, name, control, ...props }: FormInputProps
       {...props}
       value={field.value}
       onChangeText={field.onChange}
-      className="py-3 px-5 rounded-lg border border-gray-200 text-lg"
+      className={cn({"py-3 px-5 rounded-lg border border-gray-200 text-lg": !disableDefaultClass}, className)}
     />
   );
 };

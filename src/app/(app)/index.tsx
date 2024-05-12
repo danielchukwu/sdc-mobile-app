@@ -1,13 +1,37 @@
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
-import { FlatList, Text, TextInput, TextInputProps, View } from "react-native";
+import { Alert, FlatList, Pressable, Text, TextInput, TextInputProps, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { IconInput } from "@/components/input";
+import { DemoCase, TCase } from "./dummy_data";
+import { FontAwesome6 } from '@expo/vector-icons';
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { TCaseSchema } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import { LoadingScreen } from "@/components/loading-screen";
+import { format } from "date-fns";
+import { ActivityIndicator } from "react-native";
 
 export default function Page() {
+  const { data: cases, isPending, isLoading, error} = useQuery({
+    queryKey: ['cases'],
+    queryFn: async () => {
+      console.log('Starting');
+      const res = await axios.get('https://sdc-app-bk.vercel.app/api/cases');
+      return res.data as TCaseSchema[];
+    }
+  });
+  console.log({ isPending, isLoading, error });
+
+  if (isPending || isLoading) return (<LoadingScreen />);
+  if (error) return (<Text>An error occurred: {error.message}</Text>);
+
   return (
     <View className="flex-1 bg-white">
+      <StatusBar backgroundColor="black" />
       {/* Search button */}
       <View className="px-4 py-2 border-b border-gray-200">
         <IconInput
@@ -19,63 +43,56 @@ export default function Page() {
               color="gray"
               className="absolute left-5 top-1/2 "
               style={{ transform: [{ translateY: -18 / 2 }] }}
-            />
-          }
+              />
+            }
         />
+      </View>
+      {/* <Link href={'/login'}>Login</Link> */}
+
+      {/* Floating Action Button */}
+      <View className="absolute bottom-14 right-5 z-50">
+        <Pressable onPress={() => router.push('/cases/create')}>
+          <View className="size-16 justify-center items-center bg-cc-primary-main rounded-full">
+            <FontAwesome6 name="plus" size={20} color="white" />
+          </View>
+        </Pressable>
       </View>
 
       {/* Container */}
       <View>
         {/* Cases */}
         <FlatList 
-          data={Array.from({ length: 10 })}
+          data={cases}
           keyExtractor={(data, index) => index.toString()}
-          renderItem={(data) => (<CaseItem />)}
+          renderItem={(data) => (
+            <Link href={`/cases/${data.item.id}`}>
+              <CaseItem data={data.item} />
+            </Link>
+          )}
         />
       </View>
     </View>
   );
 }
 
-const CaseItem = () => {
+const CaseItem = ({data} : {data: TCaseSchema}) => {
   return (
     <View className="flex-row space-x-2 px-4 py-4 gap-3 border-b border-gray-200">
       {/* type */}
-      <View className="h-3 w-3 bg-red-500 rounded-full mt-2"></View>
+      <View className={cn("h-3 w-3 rounded-full mt-2", {"bg-red-500": data.type === "criminal", "bg-yellow-500": data.type === "civil", "bg-gray-500": data.type === "hostel"})}></View>
 
       {/* content */}
       <View className="flex-1">
-        <Text className="font-semibold text-gray-900 text-xl">Caught 4 boys smoking</Text>
-        <View className=" flex-row justify-between pt-2">
-          <Text className="text-zinc-500">5 offenders . Old boys hostel</Text>
-          <Text className="text-zinc-500">May 11th, 2024</Text>
+        <Text className="font-semibold text-gray-900 text-xl line-clamp-2">{data.title}</Text>
+        <View className=" flex-row justify-between pt-3">
+          <Text className="text-zinc-500 line-clamp-2">{data.offenders.length} offenders . {data.location}</Text>
+          <Text className="text-zinc-500 line-clamp-1">{format(data.createdAt, 'yyyy-MM-dd HH:mm')}</Text>
         </View>
       </View>
     </View>
   )
 }
 
-const IconInput = ({
-  icon,
-  ...props
-}: TextInputProps & { icon: React.ReactNode }) => {
-  return (
-    <View className="relative">
-      {icon}
-      <Input {...props} />
-    </View>
-  );
-};
-
-const Input = ({ className, placeholder, ...props }: TextInputProps) => {
-  return (
-    <TextInput
-      {...props}
-      className="p-3 pl-14 pr-5 rounded-lg border border-gray-200 text-lg"
-      placeholder={placeholder}
-    />
-  );
-};
 
 function Content() {
   return (

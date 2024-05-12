@@ -1,6 +1,7 @@
 import { Link, Stack } from "expo-router";
-import { Text} from 'react-native';
+import { Alert, Text} from 'react-native';
 export default function Layout() {
+  Alert.alert('Send money...')
   return (
     <Stack screenOptions={{statusBarColor: "#fff", headerTitleAlign: 'center', headerShadowVisible: false}}>
       <Stack.Screen name="index" options={{ headerTitle: (data) => (<Text className="text-cc-primary-main text-xl font-semibold">SDC APP</Text>), headerRight: (props) => (

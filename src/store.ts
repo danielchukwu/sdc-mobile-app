@@ -22,3 +22,16 @@ export const useCaseFormOffendersStore = create<TCaseFormOffendersStore>((set) =
   offenders: [],
   update: (newData) => set((fields) => ({offenders: [...fields.offenders, newData]})),
 }));
+
+type TCasesStore = {
+  cases: TCaseSchema[],
+  selectedIndex: number | null,
+  updateSelectedIndex: (i: number) => void,
+  updateCases: (data: TCaseSchema[]) => void,
+}
+export const useCasesStore = create<TCasesStore>((set) => ({
+  cases: [],
+  selectedIndex: null,
+  updateSelectedIndex: (i) => set({selectedIndex: i}),
+  updateCases: (data) => set({cases: data}),
+}))

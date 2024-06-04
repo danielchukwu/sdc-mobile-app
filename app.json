@@ -25,6 +25,9 @@
     "slug": "sdc-app-react-native",
     "experiments": {
       "typedRoutes": true
+    },
+    "android": {
+      "package": "com.anonymous.sdcappreactnative"
     }
   }
 }

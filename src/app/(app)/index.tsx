@@ -1,27 +1,37 @@
+import { IconInput } from "@/components/input";
+import { LoadingScreen } from "@/components/loading-screen";
+import { TCaseSchema } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import { Ionicons, FontAwesome6 } from "@expo/vector-icons";
+import AntDesign from '@expo/vector-icons/AntDesign';
+
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { format } from "date-fns";
 import { Link, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
-import { Alert, FlatList, Pressable, Text, TextInput, TextInputProps, View } from "react-native";
+import { FlatList, Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { IconInput } from "@/components/input";
-import { DemoCase, TCase } from "./dummy_data";
-import { FontAwesome6 } from '@expo/vector-icons';
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { TCaseSchema } from "@/lib/types";
-import { cn } from "@/lib/utils";
-import { LoadingScreen } from "@/components/loading-screen";
-import { format } from "date-fns";
-import { ActivityIndicator } from "react-native";
+import * as Font from 'expo-font';
+import { useCasesStore } from "@/store";
+
+Font.loadAsync
 
 export default function Page() {
+  // access store fn
+  const updateCases = useCasesStore((store) => store.updateCases);
+  const updateSelectedCase = useCasesStore((store) => store.updateSelectedIndex);
+  
+  // fetch data and update store
   const { data: cases, isPending, isLoading, error} = useQuery({
     queryKey: ['cases'],
     queryFn: async () => {
       console.log('Starting');
       const res = await axios.get('https://sdc-app-bk.vercel.app/api/cases');
-      return res.data as TCaseSchema[];
+      const data =  res.data as TCaseSchema[];
+      updateCases(data);
+      return data;
     }
   });
   console.log({ isPending, isLoading, error });
@@ -65,7 +75,7 @@ export default function Page() {
           data={cases}
           keyExtractor={(data, index) => index.toString()}
           renderItem={(data) => (
-            <Link href={`/cases/${data.item.id}`}>
+            <Link href={`/cases/${data.item.id}`} onPress={() => updateSelectedCase(data.index)}>
               <CaseItem data={data.item} />
             </Link>
           )}

@@ -1,32 +1,21 @@
-import { View, ScrollView, FlatList, Text, Pressable, Alert } from 'react-native';
-import React, { useState } from 'react';
-import { useLocalSearchParams } from 'expo-router';
-import { DemoCase, TCase, TOffender } from '../dummy_data';
-import { FontAwesome5 } from '@expo/vector-icons';
-import { Entypo } from '@expo/vector-icons';
-import { TitleAndCount } from '@/components/title-and-count';
-import { cn } from '@/lib/utils';
 import { ShowMoreButton } from '@/components/button';
 import { OffenderCard } from '@/components/cards';
-import axios from 'axios';
-import { TCaseSchema } from '@/lib/types';
-import { useQuery } from '@tanstack/react-query';
-import { LoadingScreen } from "@/components/loading-screen";
+import { TitleAndCount } from '@/components/title-and-count';
+import { cn } from '@/lib/utils';
+import { useCasesStore } from '@/store';
+import { Entypo, FontAwesome5 } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import React, { useMemo, useState } from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 
 const SingleCase = () => {
-  const { id } = useLocalSearchParams<{id: string}>();
-  const { data, isPending, isLoading, error} = useQuery({
-    queryKey: ['cases', id],
-    queryFn: async () => {
-      const res = await axios.get(`https://sdc-app-bk.vercel.app/api/cases/${id}`);
-      console.log({data: res.data});
-      return res.data as TCaseSchema;
-    }
-  });
+  // get selected case 
+  const casesZ = useCasesStore((store) => store.cases);
+  const selectedCaseIndex = useCasesStore((store) => store.selectedIndex);
+  const data = useMemo(() => casesZ[selectedCaseIndex], []);
+  
   const [showMore, setShowMore] = useState(false);
 
-  if (isPending || isLoading) return (<LoadingScreen />);
-  if (error) return (<Text>An error occured: {error.message}</Text>);
 
   return (
     <View className='flex-1 bg-white'>
@@ -68,7 +57,7 @@ const SingleCase = () => {
         </View>
       </ScrollView>
 
-      {/* <CaseNavbar /> */}
+      <CaseNavbar />
     </View>
   );
 }
@@ -77,23 +66,42 @@ export default SingleCase;
 
 
 const CaseNavbar = () => {
+  const cases = useCasesStore((store) => store.cases);
+  const selectedIndex = useCasesStore((store) => store.selectedIndex);
+  const updateSelectedIndex = useCasesStore((store) => store.updateSelectedIndex);
+
+  // nav indexes
+  const leftIndex = selectedIndex > 0 ? selectedIndex-1 : null;
+  const rightIndex = selectedIndex < (cases.length-1) ? selectedIndex+1 : null;
+  
+  // helper funcitons
+  const onNavClick = (caseIndex: number) => {
+    if (caseIndex) {
+      updateSelectedIndex(caseIndex)
+      router.replace(`/cases/${cases[caseIndex].id}`);
+    }
+  }
   return (
-    <View className="absolute w-full bottom-0 left-0 px-3 pt-2 pb-3 bg-white border-t border-gray-100">
+    <View className="absolute w-full bottom-0 left-0 px-3 pt-2 pb-3 bg-white #border-t #border-gray-100">
       <View className="flex-row gap-2 justify-stretch flex-gap-2">
 
         {/* Left Row */}
-        <CaseNavButton className='flex-1'>
-          <View className='flex-row gap-2 items-center'>
-            <Entypo name="chevron-small-left" size={24} color="black" />
-            <Text className='font-medium text-lg'>Left</Text>
-          </View>
+        <CaseNavButton className={cn('flex-1', {'opacity-50': leftIndex === null})} >
+          <Pressable onPress={() => onNavClick(leftIndex)}>
+            <View className='flex-row gap-2 items-center'>
+              <Entypo name="chevron-small-left" size={24} color="black" />
+              <Text className='font-medium text-lg'>Left</Text>
+            </View>
+          </Pressable>
         </CaseNavButton>
         {/* Right Row */}
-        <CaseNavButton className='flex-1'>
-          <View className='flex-row gap-2 items-center'>
-            <Text className='font-medium text-lg'>Right</Text>
-            <Entypo name="chevron-small-right" size={24} color="black" />
-          </View>
+        <CaseNavButton className={cn('flex-1', {'opacity-50': rightIndex === null})}>
+          <Pressable onPress={() => onNavClick(rightIndex)}>
+            <View className='flex-row gap-2 items-center'>
+              <Text className='font-medium text-lg'>Right</Text>
+              <Entypo name="chevron-small-right" size={24} color="black" />
+            </View>
+          </Pressable>
         </CaseNavButton>
 
       </View>
